@@ -1,0 +1,288 @@
+// GenericQueryService.java
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.List;
+
+@Service
+public class GenericQueryService {
+
+    private final EntityManager entityManager;
+
+    public GenericQueryService(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    public List<Object[]> executeDynamicQuery(String dynamicSql) {
+        Query query = entityManager.createNativeQuery(dynamicSql);
+        return query.getResultList();
+    }
+}
+
+
+// QueryClient.java
+import com.google.inject.Inject;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+public class QueryClient {
+
+    private final GenericQueryService genericQueryService;
+
+    @Inject
+    public QueryClient(GenericQueryService genericQueryService) {
+        this.genericQueryService = genericQueryService;
+    }
+
+    public void executeQuery(String dynamicSql) {
+        // Execute dynamic SQL query using GenericQueryService
+        List<Object[]> result = genericQueryService.executeDynamicQuery(dynamicSql);
+
+        // Process the result as needed
+        result.forEach(row -> {
+            // Process each row of the result
+            // Example: System.out.println(Arrays.toString(row));
+        });
+    }
+}
+
+// GuiceModule.java
+import com.google.inject.AbstractModule;
+import com.google.inject.persist.jpa.JpaPersistModule;
+
+import javax.persistence.EntityManager;
+
+public class GuiceModule extends AbstractModule {
+
+    @Override
+    protected void configure() {
+        install(new JpaPersistModule("myJpaUnit"));
+
+        // Bind EntityManager
+        bind(EntityManager.class).toProvider(JpaPersistModule.class).asEagerSingleton();
+
+        // Bind GenericQueryService
+        bind(GenericQueryService.class).asEagerSingleton();
+        
+        // Bind QueryClient
+        bind(QueryClient.class).asEagerSingleton();
+    }
+}
+
+To populate data in PostgreSQL based on the provided Hazelcast data populator class, you'll need to create corresponding tables in PostgreSQL and insert data into those tables. Below is an example of how you can modify your code to achieve this using Spring Data JPA:
+
+1. **Create Entity Classes for PostgreSQL:**
+
+```java
+// EmployeeEntity.java
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class EmployeeEntity {
+    @Id
+    private Integer employeeId;
+    private String employeeName;
+    private Integer departmentId;
+    private Integer projectId;
+    private Integer salary;
+    // getters and setters
+}
+```
+
+```java
+// DepartmentEntity.java
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class DepartmentEntity {
+    @Id
+    private Integer departmentId;
+    private String departmentName;
+    // getters and setters
+}
+```
+
+```java
+// ProjectEntity.java
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
+public class ProjectEntity {
+    @Id
+    private Integer projectId;
+    private String projectName;
+    // getters and setters
+}
+```
+
+2. **Create Spring Data JPA Repositories for PostgreSQL:**
+
+```java
+// EmployeeRepository.java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Integer> {
+}
+```
+
+```java
+// DepartmentRepository.java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface DepartmentRepository extends JpaRepository<DepartmentEntity, Integer> {
+}
+```
+
+```java
+// ProjectRepository.java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ProjectRepository extends JpaRepository<ProjectEntity, Integer> {
+}
+```
+
+3. **Modify DataPopulator to use Spring Data JPA Repositories:**
+
+```java
+// DataPopulator.java
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+public class DataPopulator {
+
+    private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
+    private final ProjectRepository projectRepository;
+
+    public DataPopulator(EmployeeRepository employeeRepository,
+                         DepartmentRepository departmentRepository,
+                         ProjectRepository projectRepository) {
+        this.employeeRepository = employeeRepository;
+        this.departmentRepository = departmentRepository;
+        this.projectRepository = projectRepository;
+    }
+
+    public void populatePostgresTables() {
+        // Populate employees table
+        addEmployeeRecord(1, "A", 1, 1, 80000);
+        addEmployeeRecord(2, "B", 2, 1, 90000);
+        addEmployeeRecord(3, "C", 1, 2, 75000);
+        addEmployeeRecord(4, "D", 2, 2, 85000);
+
+        // Populate departments table
+        addDepartmentRecord(1, "HR");
+        addDepartmentRecord(2, "Engineering");
+
+        // Populate projects table
+        addProjectRecord(1, "ProjectA");
+        addProjectRecord(2, "ProjectB");
+    }
+
+    private void addEmployeeRecord(Integer employeeId, String employeeName, Integer departmentId,
+                                   Integer projectId, Integer salary) {
+        EmployeeEntity employeeEntity = new EmployeeEntity();
+        employeeEntity.setEmployeeId(employeeId);
+        employeeEntity.setEmployeeName(employeeName);
+        employeeEntity.setDepartmentId(departmentId);
+        employeeEntity.setProjectId(projectId);
+        employeeEntity.setSalary(salary);
+        employeeRepository.save(employeeEntity);
+    }
+
+    private void addDepartmentRecord(Integer departmentId, String departmentName) {
+        DepartmentEntity departmentEntity = new DepartmentEntity();
+        departmentEntity.setDepartmentId(departmentId);
+        departmentEntity.setDepartmentName(departmentName);
+        departmentRepository.save(departmentEntity);
+    }
+
+    private void addProjectRecord(Integer projectId, String projectName) {
+        ProjectEntity projectEntity = new ProjectEntity();
+        projectEntity.setProjectId(projectId);
+        projectEntity.setProjectName(projectName);
+        projectRepository.save(projectEntity);
+    }
+}
+```
+
+4. **Guice Configuration:**
+
+Modify your Guice module to include the repositories and the data populator:
+
+```java
+// GuiceModule.java
+import com.google.inject.AbstractModule;
+import com.google.inject.persist.jpa.JpaPersistModule;
+
+import javax.persistence.EntityManager;
+
+public class GuiceModule extends AbstractModule {
+
+    @Override
+    protected void configure() {
+        install(new JpaPersistModule("myJpaUnit"));
+
+        // Bind EntityManager
+        bind(EntityManager.class).toProvider(JpaPersistModule.class).asEagerSingleton();
+
+        // Bind Spring Data JPA Repositories
+        bind(EmployeeRepository.class).asEagerSingleton();
+        bind(DepartmentRepository.class).asEagerSingleton();
+        bind(ProjectRepository.class).asEagerSingleton();
+
+        // Bind DataPopulator
+        bind(DataPopulator.class).asEagerSingleton();
+        
+        // Bind QueryClient
+        bind(QueryClient.class).asEagerSingleton();
+    }
+}
+```
+
+Now, your `DataPopulator` class uses Spring Data JPA repositories to populate data into PostgreSQL tables. Adjust the code according to your specific requirements and configurations. Make sure that your Spring Data JPA configuration is correctly set up in your Spring Boot application.
+
+
+<!-- Spring Boot Starter Data JPA -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+    <version>2.6.2</version>
+</dependency>
+
+<!-- PostgreSQL Driver -->
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.2.24</version>
+</dependency>
+
+<!-- Spring Boot Starter for Guice -->
+<dependency>
+    <groupId>com.github.springboot-guice</groupId>
+    <artifactId>spring-boot-guice</artifactId>
+    <version>1.1.0</version>
+</dependency>
+
+<!-- Spring Boot Starter Test (for testing) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <version>2.6.2</version>
+    <scope>test</scope>
+</dependency>
+
+
+<!-- Guice Spring Boot Starter -->
+<dependency>
+    <groupId>com.google.inject.extensions</groupId>
+    <artifactId>guice-spring-boot-starter</artifactId>
+    <version>1.0.2</version>
+</dependency>
