@@ -286,3 +286,146 @@ Now, your `DataPopulator` class uses Spring Data JPA repositories to populate da
     <artifactId>guice-spring-boot-starter</artifactId>
     <version>1.0.2</version>
 </dependency>
+
+
+Certainly! Assuming you have the entities `EmployeeEntity`, `DepartmentEntity`, and `ProjectEntity` representing your PostgreSQL tables, and you want to perform a join query, here's an example of how you can create a method in your `GenericQueryService` to execute the join query:
+
+1. **Update GenericQueryService:**
+
+```java
+// GenericQueryService.java
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.List;
+
+@Service
+public class GenericQueryService {
+
+    private final EntityManager entityManager;
+
+    public GenericQueryService(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    public List<Object[]> executeJoinQuery(String dynamicSql) {
+        Query query = entityManager.createNativeQuery(dynamicSql);
+        return query.getResultList();
+    }
+}
+```
+
+2. **Create a method in QueryClient to execute the join query:**
+
+```java
+// QueryClient.java
+import com.google.inject.Inject;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+public class QueryClient {
+
+    private final GenericQueryService genericQueryService;
+
+    @Inject
+    public QueryClient(GenericQueryService genericQueryService) {
+        this.genericQueryService = genericQueryService;
+    }
+
+    public void executeJoinQueryAndPrintResult() {
+        // Define your join query dynamically
+        String joinQuery = "SELECT e.employee_id, e.employee_name, d.department_name, p.project_name " +
+                           "FROM EmployeeEntity e " +
+                           "JOIN DepartmentEntity d ON e.department_id = d.department_id " +
+                           "JOIN ProjectEntity p ON e.project_id = p.project_id";
+
+        // Execute join query using GenericQueryService
+        List<Object[]> result = genericQueryService.executeJoinQuery(joinQuery);
+
+        // Print the result in a pretty format
+        System.out.println("Result of Join Query:");
+        System.out.println("==============================================");
+        for (Object[] row : result) {
+            System.out.printf("Employee ID: %s, Employee Name: %s, Department: %s, Project: %s%n",
+                    row[0], row[1], row[2], row[3]);
+        }
+        System.out.println("==============================================");
+    }
+}
+```
+
+3. **Guice Configuration:**
+
+Ensure that your Guice configuration is properly set up, including the `GenericQueryService` and `QueryClient`.
+
+Now, you can call `executeJoinQueryAndPrintResult()` in your application to execute the join query and print the result in a pretty format. Adjust the SQL query based on your actual database schema and requirements.
+
+Certainly! To measure the time taken for the execution, you can use the `System.currentTimeMillis()` method before and after the execution of the query. Additionally, I'll provide configuration parameters assuming you have a PostgreSQL database installed locally.
+
+1. **Update GenericQueryService with timing:**
+
+```java
+// GenericQueryService.java
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.List;
+
+@Service
+public class GenericQueryService {
+
+    private final EntityManager entityManager;
+
+    public GenericQueryService(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    public List<Object[]> executeJoinQuery(String dynamicSql) {
+        long startTime = System.currentTimeMillis();
+
+        Query query = entityManager.createNativeQuery(dynamicSql);
+        List<Object[]> result = query.getResultList();
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Query executed in " + (endTime - startTime) + " milliseconds.");
+
+        return result;
+    }
+}
+```
+
+2. **Update QueryClient with PostgreSQL configuration:**
+
+Assuming you have a PostgreSQL database installed locally, you need to provide the necessary configuration in your `application.properties` file:
+
+```properties
+# application.properties
+
+# DataSource settings: set PostgreSQL properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/your_database_name
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+
+# Specify the database platform
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+# Hibernate ddl auto (create, create-drop, validate, update)
+spring.jpa.hibernate.ddl-auto=update
+
+# Logging SQL statements
+spring.jpa.show-sql=true
+```
+
+Replace `your_database_name`, `your_username`, and `your_password` with your actual database name, username, and password.
+
+3. **Guice Configuration:**
+
+Make sure your Guice configuration is correctly set up to include the necessary components, including `GenericQueryService` and `QueryClient`.
+
+Now, when you run your application, it will execute the join query, print the result, and display the time taken for the execution. Adjust the configuration parameters according to your PostgreSQL setup.
+
+
