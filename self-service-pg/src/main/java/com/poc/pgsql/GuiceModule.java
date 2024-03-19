@@ -11,10 +11,11 @@ public class GuiceModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		// Bind EntityManagerFactory
-		bind(EntityManagerFactory.class).toProvider(EntityManagerFactoryProvider.class).asEagerSingleton();
+		// Bind DataSourceConfig (makes DataSource available)
+		bind(DataSourceConfig.class).asEagerSingleton();
 
-		// Bind EntityManager
+		// Bind EntityManagerFactory using the provider (injects EntityManagerFactory)
+		bind(EntityManagerFactory.class).toProvider(EntityManagerFactoryProvider.class).asEagerSingleton();
 		bind(EntityManager.class).toProvider(EntityManagerProvider.class).asEagerSingleton();
 
 		// Bind Spring Data JPA Repositories
@@ -22,9 +23,13 @@ public class GuiceModule extends AbstractModule {
 		bind(EmployeeRepository.class).toProvider(EmployeeRepositoryProvider.class).asEagerSingleton();
         bind(DepartmentRepository.class).toProvider(DepartmentRepositoryProvider.class).asEagerSingleton();
         bind(ProjectRepository.class).toProvider(ProjectRepositoryProvider.class).asEagerSingleton();
-        
+
+		bind(GenericQueryService.class).asEagerSingleton();
+
         // Bind DataPopulator
-		bind(DataPopulatorPG.class).asEagerSingleton();
+		bind(DataPopulator.class);
+
+		bind(QueryClient.class);
 	}	
 	
 	static class EmployeeRepositoryProvider implements Provider<EmployeeRepository> {

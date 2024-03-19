@@ -2,20 +2,21 @@ package com.poc.pgsql;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
 import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 
 public class EntityManagerFactoryProvider implements Provider<EntityManagerFactory> {
 
-    private final EntityManagerFactory entityManagerFactory;
-
     @Inject
-    public EntityManagerFactoryProvider(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
-    }
+    private DataSourceConfig dataSourceConfig;
 
     @Override
     public EntityManagerFactory get() {
-        return entityManagerFactory;
+        DataSource dataSource = dataSourceConfig.dataSource();
+        LocalContainerEntityManagerFactoryBean factoryBean = dataSourceConfig.entityManagerFactory(dataSource);
+        factoryBean.afterPropertiesSet();
+        return factoryBean.getObject();
     }
 }

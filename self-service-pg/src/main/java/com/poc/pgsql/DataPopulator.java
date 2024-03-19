@@ -5,14 +5,14 @@ import com.poc.model.Department;
 import com.poc.model.Employee;
 import com.poc.model.Project;
 
-public class DataPopulatorPG {
+public class DataPopulator {
 	private final EmployeeRepository employeeRepository;
 	private final DepartmentRepository departmentRepository;
 	private final ProjectRepository projectRepository;
 
 	@Inject
-	public DataPopulatorPG(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository,
-			ProjectRepository projectRepository) {
+	public DataPopulator(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository,
+						 ProjectRepository projectRepository) {
 		this.employeeRepository = employeeRepository;
 		this.departmentRepository = departmentRepository;
 		this.projectRepository = projectRepository;

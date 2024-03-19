@@ -5,8 +5,10 @@ import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -16,15 +18,17 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
+@EnableJpaRepositories("com.poc.pgsql")  // Package containing JPA repositories
+@EntityScan("com.poc.model")              // Package containing entity classes
 public class DataSourceConfig {
 
     @Bean
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/your_database_name");
-        dataSource.setUsername("your_username");
-        dataSource.setPassword("your_password");
+        dataSource.setUrl("jdbc:postgresql://localhost:5432/lh_test?currentSchema=loanshub");
+        dataSource.setUsername("postgres");
+        dataSource.setPassword("test");
         return dataSource;
     }
 
@@ -32,7 +36,7 @@ public class DataSourceConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean entityManagerFactory = new LocalContainerEntityManagerFactoryBean();
         entityManagerFactory.setDataSource(dataSource);
-        entityManagerFactory.setPackagesToScan("com.scb.model"); // Package where your entity classes reside
+        entityManagerFactory.setPackagesToScan("com.poc.model"); // Package where your entity classes reside
         entityManagerFactory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         entityManagerFactory.setJpaProperties(hibernateProperties());
         return entityManagerFactory;

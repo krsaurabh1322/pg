@@ -8,17 +8,17 @@ import java.util.List;
 
 public class QueryClient {
 	private final GenericQueryService genericQueryService;
-
+    @Inject
     public QueryClient(GenericQueryService genericQueryService) {
         this.genericQueryService = genericQueryService;
     }
 
     public void executeJoinQueryAndPrintResult() {
         // Define your join query dynamically
-        String joinQuery = "SELECT e.employee_id, e.employee_name, d.department_name, p.project_name " +
-                           "FROM EmployeeEntity e " +
-                           "JOIN DepartmentEntity d ON e.department_id = d.department_id " +
-                           "JOIN ProjectEntity p ON e.project_id = p.project_id";
+        String joinQuery = "SELECT e.employeeId, e.employeeName, d.departmentName, p.projectName " +
+                           "FROM Employee e " +
+                           "JOIN Department d ON e.departmentId = d.departmentId " +
+                           "JOIN Project p ON e.projectId = p.projectId";
 
         // Execute join query using GenericQueryService
         List<Object[]> result = genericQueryService.executeJoinQuery(joinQuery);
@@ -38,7 +38,7 @@ public class QueryClient {
         Injector injector = Guice.createInjector(new GuiceModule());
         
      // Get DataPopulator instance
-        DataPopulatorPG dataPopulator = injector.getInstance(DataPopulatorPG.class);
+        DataPopulator dataPopulator = injector.getInstance(DataPopulator.class);
 
         // Populate PostgreSQL tables
         dataPopulator.populatePostgresTables();
