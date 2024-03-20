@@ -2,21 +2,30 @@ package com.poc.pgsql;
 
 import com.google.inject.Inject;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Query;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
+@Component
 public class GenericQueryService {
 
-    private final EntityManager entityManager;
+    private final EntityManagerFactory entityManagerFactory;
 
     @Inject
-    public GenericQueryService(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public GenericQueryService(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
     }
 
     public List<Object[]> executeJoinQuery(String dynamicSql) {
-        Query query = entityManager.createNativeQuery(dynamicSql);
-        return query.getResultList();
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            Query query = entityManager.createNativeQuery(dynamicSql);
+            return query.getResultList();
+        } finally {
+            entityManager.close();
+        }
     }
 }

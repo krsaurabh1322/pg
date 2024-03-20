@@ -5,8 +5,6 @@ import com.poc.model.Department;
 import com.poc.model.Employee;
 import com.poc.model.Project;
 
-import javax.transaction.Transactional;
-
 public class DataPopulator {
 	private final EmployeeRepository employeeRepository;
 	private final DepartmentRepository departmentRepository;
@@ -20,7 +18,6 @@ public class DataPopulator {
 		this.projectRepository = projectRepository;
 	}
 
-	@Transactional
 	public void populatePostgresTables() {
 		// Populate employees table
 		addEmployeeRecord(1, "A", 1, 1, 80000);

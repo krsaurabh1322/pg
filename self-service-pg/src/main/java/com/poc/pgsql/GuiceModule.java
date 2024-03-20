@@ -1,76 +1,17 @@
 package com.poc.pgsql;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import org.springframework.guice.module.BeanFactoryProvider;
+import org.springframework.guice.module.SpringModule;
 
 public class GuiceModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		// Bind DataSourceConfig (makes DataSource available)
-		bind(DataSourceConfig.class).asEagerSingleton();
+		// Bind DataSourceConfig (Register Spring configuration)
+		install(new SpringModule(BeanFactoryProvider.from(DataSourceConfig.class)));
 
-		// Bind EntityManagerFactory using the provider (injects EntityManagerFactory)
-		bind(EntityManagerFactory.class).toProvider(EntityManagerFactoryProvider.class).asEagerSingleton();
-		bind(EntityManager.class).toProvider(EntityManagerProvider.class).asEagerSingleton();
-
-		// Bind Spring Data JPA Repositories
-		// Bind repositories
-		bind(EmployeeRepository.class).toProvider(EmployeeRepositoryProvider.class).asEagerSingleton();
-        bind(DepartmentRepository.class).toProvider(DepartmentRepositoryProvider.class).asEagerSingleton();
-        bind(ProjectRepository.class).toProvider(ProjectRepositoryProvider.class).asEagerSingleton();
-
-		bind(GenericQueryService.class).asEagerSingleton();
-
-        // Bind DataPopulator
 		bind(DataPopulator.class);
-
 		bind(QueryClient.class);
-	}	
-	
-	static class EmployeeRepositoryProvider implements Provider<EmployeeRepository> {
-	    private final Provider<EntityManager> entityManagerProvider;
-
-	    @Inject
-	    public EmployeeRepositoryProvider(Provider<EntityManager> entityManagerProvider) {
-	        this.entityManagerProvider = entityManagerProvider;
-	    }
-
-	    @Override
-	    public EmployeeRepository get() {
-	        return new JpaRepositoryProvider<>(entityManagerProvider.get(), EmployeeRepository.class).get();
-	    }
-	}
-	
-	static class DepartmentRepositoryProvider implements Provider<DepartmentRepository> {
-	    private final Provider<EntityManager> entityManagerProvider;
-
-	    @Inject
-	    public DepartmentRepositoryProvider(Provider<EntityManager> entityManagerProvider) {
-	        this.entityManagerProvider = entityManagerProvider;
-	    }
-
-	    @Override
-	    public DepartmentRepository get() {
-	        return new JpaRepositoryProvider<>(entityManagerProvider.get(), DepartmentRepository.class).get();
-	    }
-	}
-	
-	static class ProjectRepositoryProvider implements Provider<ProjectRepository> {
-	    private final Provider<EntityManager> entityManagerProvider;
-
-	    @Inject
-	    public ProjectRepositoryProvider(Provider<EntityManager> entityManagerProvider) {
-	        this.entityManagerProvider = entityManagerProvider;
-	    }
-
-	    @Override
-	    public ProjectRepository get() {
-	        return new JpaRepositoryProvider<>(entityManagerProvider.get(), ProjectRepository.class).get();
-	    }
 	}
 }
