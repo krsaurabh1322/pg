@@ -5,6 +5,8 @@ import com.poc.model.Department;
 import com.poc.model.Employee;
 import com.poc.model.Project;
 
+import javax.transaction.Transactional;
+
 public class DataPopulator {
 	private final EmployeeRepository employeeRepository;
 	private final DepartmentRepository departmentRepository;
@@ -18,6 +20,7 @@ public class DataPopulator {
 		this.projectRepository = projectRepository;
 	}
 
+	@Transactional
 	public void populatePostgresTables() {
 		// Populate employees table
 		addEmployeeRecord(1, "A", 1, 1, 80000);
@@ -42,20 +45,20 @@ public class DataPopulator {
 		employeeEntity.setDepartmentId(departmentId);
 		employeeEntity.setProjectId(projectId);
 		employeeEntity.setSalary(salary);
-		employeeRepository.save(employeeEntity);
+		employeeRepository.saveAndFlush(employeeEntity);
 	}
 
 	private void addDepartmentRecord(Integer departmentId, String departmentName) {
 		Department departmentEntity = new Department();
 		departmentEntity.setDepartmentId(departmentId);
 		departmentEntity.setDepartmentName(departmentName);
-		departmentRepository.save(departmentEntity);
+		departmentRepository.saveAndFlush(departmentEntity);
 	}
 
 	private void addProjectRecord(Integer projectId, String projectName) {
 		Project projectEntity = new Project();
 		projectEntity.setProjectId(projectId);
 		projectEntity.setProjectName(projectName);
-		projectRepository.save(projectEntity);
+		projectRepository.saveAndFlush(projectEntity);
 	}
 }

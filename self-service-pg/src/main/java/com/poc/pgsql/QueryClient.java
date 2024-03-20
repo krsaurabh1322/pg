@@ -37,7 +37,7 @@ public class QueryClient {
         // Create Guice injector
         Injector injector = Guice.createInjector(new GuiceModule());
         
-     // Get DataPopulator instance
+        // Get DataPopulator instance
         DataPopulator dataPopulator = injector.getInstance(DataPopulator.class);
 
         // Populate PostgreSQL tables
